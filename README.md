@@ -1,5 +1,7 @@
 # CompeteIQ: AI Competitor Intelligence Agent Team
 
+![Landing Page](app.PNG)
+
 CompeteIQ is a sophisticated competitive analysis platform powered by **Firecrawl**, **Exa AI**, and the **Agno AI Agent framework**. It orchestrates a team of specialized AI agents to discover competitors, crawl their digital footprint, and generate actionable strategic reports.
 
 ## 🚀 Features
@@ -56,4 +58,8 @@ The application requires the following libraries (all included in `requirements.
 1. **Configure**: Enter your API keys in the sidebar.
 2. **Analyze**: Input your company URL or a description of what you do.
 3. **Review**: Watch the agents collaborate to build your comparison table and strategic report.
+
+## 🌐 Deployment
+
+![Deployment Options](deploy.PNG)
 
