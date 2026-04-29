@@ -1,0 +1,9 @@
+firecrawl-py>=4.23.0
+duckduckgo-search>=7.2.1
+agno>=2.6.4
+streamlit>=1.41.1
+exa-py
+pandas
+pydantic
+requests
+ddgs
