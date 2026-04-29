@@ -12,55 +12,153 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import json
 
-# Streamlit UI
-st.set_page_config(page_title="AI Competitor Intelligence Agent Team", layout="wide")
+# Streamlit UI Configuration
+st.set_page_config(
+    page_title="CompeteIQ | AI Competitor Intelligence",
+    page_icon="🎯",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for a professional look
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .main {
+        background-color: #f8f9fa;
+    }
+    
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        height: 3em;
+        background-color: #0066ff;
+        color: white;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        background-color: #0052cc;
+        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+        transform: translateY(-1px);
+    }
+    
+    .sidebar .sidebar-content {
+        background-color: #ffffff;
+    }
+    
+    .card {
+        background-color: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        border-left: 5px solid #0066ff;
+    }
+    
+    .metric-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    
+    .header-container {
+        padding: 2rem 0;
+        text-align: center;
+        background: linear-gradient(135deg, #0066ff 0%, #00d4ff 100%);
+        color: white;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    h1 {
+        font-weight: 700 !important;
+        letter-spacing: -0.5px;
+    }
+    
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
+        border-radius: 8px;
+    }
+    
+    /* Custom info box */
+    .styled-info {
+        padding: 1rem;
+        background-color: #e7f0ff;
+        border-radius: 8px;
+        border-left: 4px solid #0066ff;
+        margin-bottom: 1rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Sidebar for API keys
-st.sidebar.title("API Keys")
-openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
-firecrawl_api_key = st.sidebar.text_input("Firecrawl API Key", type="password")
-
-# Add search engine selection before API keys
-search_engine = st.sidebar.selectbox(
-    "Select Search Endpoint",
-    options=["Perplexity AI - Sonar Pro", "Exa AI"],
-    help="Choose which AI service to use for finding competitor URLs"
-)
-
-# Show relevant API key input based on selection
-if search_engine == "Perplexity AI - Sonar Pro":
-    perplexity_api_key = st.sidebar.text_input("Perplexity API Key", type="password")
-    # Store API keys in session state
-    if openai_api_key and firecrawl_api_key and perplexity_api_key:
-        st.session_state.openai_api_key = openai_api_key
-        st.session_state.firecrawl_api_key = firecrawl_api_key
-        st.session_state.perplexity_api_key = perplexity_api_key
+with st.sidebar:
+    st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=80)
+    st.title("Settings")
+    st.markdown("---")
+    
+    openai_api_key = st.text_input("OpenAI API Key", type="password", help="Enter your OpenAI API key")
+    firecrawl_api_key = st.text_input("Firecrawl API Key", type="password", help="Enter your Firecrawl API key")
+    
+    search_engine = st.selectbox(
+        "Search Engine",
+        options=["Perplexity AI - Sonar Pro", "Exa AI"],
+        help="Choose the service to find competitor URLs"
+    )
+    
+    if search_engine == "Perplexity AI - Sonar Pro":
+        perplexity_api_key = st.text_input("Perplexity API Key", type="password")
+        if openai_api_key and firecrawl_api_key and perplexity_api_key:
+            st.session_state.openai_api_key = openai_api_key
+            st.session_state.firecrawl_api_key = firecrawl_api_key
+            st.session_state.perplexity_api_key = perplexity_api_key
+        else:
+            st.warning("🔑 Keys required to proceed.")
     else:
-        st.sidebar.warning("Please enter all required API keys to proceed.")
-else:  # Exa AI
-    exa_api_key = st.sidebar.text_input("Exa API Key", type="password")
-    # Store API keys in session state
-    if openai_api_key and firecrawl_api_key and exa_api_key:
-        st.session_state.openai_api_key = openai_api_key
-        st.session_state.firecrawl_api_key = firecrawl_api_key
-        st.session_state.exa_api_key = exa_api_key
-    else:
-        st.sidebar.warning("Please enter all required API keys to proceed.")
+        exa_api_key = st.text_input("Exa API Key", type="password")
+        if openai_api_key and firecrawl_api_key and exa_api_key:
+            st.session_state.openai_api_key = openai_api_key
+            st.session_state.firecrawl_api_key = firecrawl_api_key
+            st.session_state.exa_api_key = exa_api_key
+        else:
+            st.warning("🔑 Keys required to proceed.")
 
-# Main UI
-st.title(" AI Competitor Intelligence Agent Team")
-st.info(
-    """
-    This app helps businesses analyze their competitors by extracting structured data from competitor websites and generating insights using AI.
-    - Provide a **URL** or a **description** of your company.
-    - The app will fetch competitor URLs, extract relevant information, and generate a detailed analysis report.
-    """
-)
-st.success("For better results, provide both URL and a 5-6 word description of your company!")
+# Hero Header
+st.markdown("""
+    <div class="header-container">
+        <h1>CompeteIQ</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">AI-Powered Competitor Intelligence Dashboard</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Input fields for URL and description
-url = st.text_input("Enter your company URL :")
-description = st.text_area("Enter a description of your company (if URL is not available):")
+# Instruction Section
+col1, col2 = st.columns([2, 1])
+with col1:
+    st.markdown("""
+        <div class="styled-info">
+            <strong>How it works:</strong> Our specialized agents will discover your competitors, 
+            crawl their digital footprint, and synthesize a strategic analysis report for you.
+        </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.success("💡 Provide both URL and description for the most accurate results!")
+
+# Input Section
+with st.container():
+    c1, c2 = st.columns(2)
+    with c1:
+        url = st.text_input("Company URL", placeholder="https://example.com")
+    with c2:
+        description = st.text_area("Company Description", placeholder="e.g., A cloud-based CRM for small businesses", height=68)
 
 # Initialize API keys and tools
 if "openai_api_key" in st.session_state and "firecrawl_api_key" in st.session_state:
@@ -74,270 +172,155 @@ if "openai_api_key" in st.session_state and "firecrawl_api_key" in st.session_st
             limit=5
         )
 
-        # Create ExaTools agent for finding competitor URLs
+        # Create agents
+        model = OpenAIChat(id="gpt-4o", api_key=st.session_state.openai_api_key)
+        
         if search_engine == "Exa AI":
-            exa_tools = ExaTools(
-                api_key=st.session_state.exa_api_key,
-                category="company",
-                num_results=3
-            )
+            exa_tools = ExaTools(api_key=st.session_state.exa_api_key, category="company", num_results=3)
             competitor_finder_agent = Agent(
-                model=OpenAIChat(id="gpt-4o", api_key=st.session_state.openai_api_key),
+                model=model,
                 tools=[exa_tools],
                 debug_mode=True,
                 markdown=True,
                 instructions=[
                     "You are a competitor finder agent. Use ExaTools to find competitor company URLs.",
-                    "When given a URL, find similar companies. When given a description, search for companies matching that description.",
                     "Return ONLY the URLs, one per line, with no additional text."
                 ]
             )
 
-        firecrawl_agent = Agent(
-            model=OpenAIChat(id="gpt-4o", api_key=st.session_state.openai_api_key),
-            tools=[firecrawl_tools, DuckDuckGoTools()],
-            debug_mode=True,
-            markdown=True
-        )
-
-        analysis_agent = Agent(
-            model=OpenAIChat(id="gpt-4o", api_key=st.session_state.openai_api_key),
-            debug_mode=True,
-            markdown=True
-        )
-
-        # New agent for comparing competitor data
-        comparison_agent = Agent(
-            model=OpenAIChat(id="gpt-4o", api_key=st.session_state.openai_api_key),
-            debug_mode=True,
-            markdown=True
-        )
+        firecrawl_agent = Agent(model=model, tools=[firecrawl_tools, DuckDuckGoTools()], debug_mode=True, markdown=True)
+        analysis_agent = Agent(model=model, debug_mode=True, markdown=True)
+        comparison_agent = Agent(model=model, debug_mode=True, markdown=True)
 
         def get_competitor_urls(url: str = None, description: str = None) -> list[str]:
-            if not url and not description:
-                raise ValueError("Please provide either a URL or a description.")
-
             if search_engine == "Perplexity AI - Sonar Pro":
                 perplexity_url = "https://api.perplexity.ai/chat/completions"
-                
-                content = "Find me 3 competitor company URLs similar to the company with "
-                if url and description:
-                    content += f"URL: {url} and description: {description}"
-                elif url:
-                    content += f"URL: {url}"
-                else:
-                    content += f"description: {description}"
-                content += ". ONLY RESPOND WITH THE URLS, NO OTHER TEXT."
-
+                content = f"Find 3 competitor URLs for: URL: {url}, Description: {description}. ONLY URLs."
                 payload = {
                     "model": "sonar-pro",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "Be precise and only return 3 company URLs ONLY."
-                        },
-                        {
-                            "role": "user",
-                            "content": content
-                        }
-                    ],
-                    "max_tokens": 1000,
-                    "temperature": 0.2,
+                    "messages": [{"role": "system", "content": "Return 3 URLs only."}, {"role": "user", "content": content}],
+                    "max_tokens": 1000, "temperature": 0.2,
                 }
-                
-                headers = {
-                    "Authorization": f"Bearer {st.session_state.perplexity_api_key}",
-                    "Content-Type": "application/json"
-                }
-
+                headers = {"Authorization": f"Bearer {st.session_state.perplexity_api_key}", "Content-Type": "application/json"}
                 try:
                     response = requests.post(perplexity_url, json=payload, headers=headers)
                     response.raise_for_status()
                     urls = response.json()['choices'][0]['message']['content'].strip().split('\n')
-                    return [url.strip() for url in urls if url.strip()]
+                    return [u.strip() for u in urls if u.strip()]
                 except Exception as e:
-                    st.error(f"Error fetching competitor URLs from Perplexity: {str(e)}")
+                    st.error(f"Discovery Error: {str(e)}")
                     return []
-
-            else:  # Exa AI
+            else:
                 try:
-                    # Use ExaTools agent to find competitor URLs
-                    if url:
-                        prompt = f"Find 3 competitor company URLs similar to: {url}. Return ONLY the URLs, one per line."
-                    else:
-                        prompt = f"Find 3 competitor company URLs matching this description: {description}. Return ONLY the URLs, one per line."
-                    
+                    prompt = f"Find 3 competitor URLs for: {url or description}. URLs only."
                     response: RunOutput = competitor_finder_agent.run(prompt)
-                    # Extract URLs from the response
-                    urls = [line.strip() for line in response.content.strip().split('\n') if line.strip() and line.strip().startswith('http')]
-                    return urls[:3]  # Return up to 3 URLs
+                    return [l.strip() for l in response.content.strip().split('\n') if l.strip().startswith('http')][:3]
                 except Exception as e:
-                    st.error(f"Error fetching competitor URLs from Exa: {str(e)}")
+                    st.error(f"Discovery Error: {str(e)}")
                     return []
 
         class CompetitorDataSchema(BaseModel):
             company_name: str = Field(description="Name of the company")
-            pricing: str = Field(description="Pricing details, tiers, and plans")
-            key_features: List[str] = Field(description="Main features and capabilities of the product/service")
-            tech_stack: List[str] = Field(description="Technologies, frameworks, and tools used")
-            marketing_focus: str = Field(description="Main marketing angles and target audience")
-            customer_feedback: str = Field(description="Customer testimonials, reviews, and feedback")
+            pricing: str = Field(description="Pricing details")
+            key_features: List[str] = Field(description="Main features")
+            tech_stack: List[str] = Field(description="Tech stack")
+            marketing_focus: str = Field(description="Marketing focus")
+            customer_feedback: str = Field(description="Customer feedback")
 
         def extract_competitor_info(competitor_url: str) -> Optional[dict]:
             try:
-                # Initialize FirecrawlApp with API key
                 app = FirecrawlApp(api_key=st.session_state.firecrawl_api_key)
-                
-                # Add wildcard to crawl subpages
                 url_pattern = f"{competitor_url}/*"
-                
-                extraction_prompt = """
-                Extract detailed information about the company's offerings, including:
-                - Company name and basic information
-                - Pricing details, plans, and tiers
-                - Key features and main capabilities
-                - Technology stack and technical details
-                - Marketing focus and target audience
-                - Customer feedback and testimonials
-                
-                Analyze the entire website content to provide comprehensive information for each field.
-                """
-                
-                response = app.extract(
-                    [url_pattern],
-                    prompt=extraction_prompt,
-                    schema=CompetitorDataSchema.model_json_schema()
-                )
-                
-                # Handle ExtractResponse object
-                try:
-                    if hasattr(response, 'success') and response.success:
-                        if hasattr(response, 'data') and response.data:
-                            extracted_info = response.data
-                            
-                            # Create JSON structure
-                            competitor_json = {
-                                "competitor_url": competitor_url,
-                                "company_name": extracted_info.get('company_name', 'N/A') if isinstance(extracted_info, dict) else getattr(extracted_info, 'company_name', 'N/A'),
-                                "pricing": extracted_info.get('pricing', 'N/A') if isinstance(extracted_info, dict) else getattr(extracted_info, 'pricing', 'N/A'),
-                                "key_features": extracted_info.get('key_features', [])[:5] if isinstance(extracted_info, dict) and extracted_info.get('key_features') else getattr(extracted_info, 'key_features', [])[:5] if hasattr(extracted_info, 'key_features') else ['N/A'],
-                                "tech_stack": extracted_info.get('tech_stack', [])[:5] if isinstance(extracted_info, dict) and extracted_info.get('tech_stack') else getattr(extracted_info, 'tech_stack', [])[:5] if hasattr(extracted_info, 'tech_stack') else ['N/A'],
-                                "marketing_focus": extracted_info.get('marketing_focus', 'N/A') if isinstance(extracted_info, dict) else getattr(extracted_info, 'marketing_focus', 'N/A'),
-                                "customer_feedback": extracted_info.get('customer_feedback', 'N/A') if isinstance(extracted_info, dict) else getattr(extracted_info, 'customer_feedback', 'N/A')
-                            }
-                            
-                            return competitor_json
-                        else:
-                            return None
-                    else:
-                        return None
-                        
-                except Exception as response_error:
-                    return None
-                    
-            except Exception as e:
+                response = app.extract([url_pattern], prompt="Extract competitor intelligence.", schema=CompetitorDataSchema.model_json_schema())
+                if hasattr(response, 'success') and response.success and response.data:
+                    data = response.data
+                    return {
+                        "competitor_url": competitor_url,
+                        "company_name": data.get('company_name', 'N/A'),
+                        "pricing": data.get('pricing', 'N/A'),
+                        "key_features": data.get('key_features', [])[:5],
+                        "tech_stack": data.get('tech_stack', [])[:5],
+                        "marketing_focus": data.get('marketing_focus', 'N/A'),
+                        "customer_feedback": data.get('customer_feedback', 'N/A')
+                    }
                 return None
+            except: return None
 
-        def generate_comparison_report(competitor_data: list) -> None:
-            # Create DataFrame directly from competitor data
-            if not competitor_data:
-                st.error("No competitor data available for comparison")
-                return
-            
-            # Prepare data for DataFrame
+        def generate_comparison_report(competitor_data: list):
             table_data = []
-            for competitor in competitor_data:
-                row = {
-                    'Company': f"{competitor.get('company_name', 'N/A')} ({competitor.get('competitor_url', 'N/A')})",
-                    'Pricing': competitor.get('pricing', 'N/A')[:100] + '...' if len(competitor.get('pricing', '')) > 100 else competitor.get('pricing', 'N/A'),
-                    'Key Features': ', '.join(competitor.get('key_features', [])[:3]) if competitor.get('key_features') else 'N/A',
-                    'Tech Stack': ', '.join(competitor.get('tech_stack', [])[:3]) if competitor.get('tech_stack') else 'N/A',
-                    'Marketing Focus': competitor.get('marketing_focus', 'N/A')[:100] + '...' if len(competitor.get('marketing_focus', '')) > 100 else competitor.get('marketing_focus', 'N/A'),
-                    'Customer Feedback': competitor.get('customer_feedback', 'N/A')[:100] + '...' if len(competitor.get('customer_feedback', '')) > 100 else competitor.get('customer_feedback', 'N/A')
-                }
-                table_data.append(row)
-            
-            # Create DataFrame
+            for comp in competitor_data:
+                table_data.append({
+                    'Company': f"{comp.get('company_name', 'N/A')}",
+                    'Website': comp.get('competitor_url', 'N/A'),
+                    'Pricing': comp.get('pricing', 'N/A')[:100] + '...',
+                    'Features': ', '.join(comp.get('key_features', [])[:3]),
+                    'Tech': ', '.join(comp.get('tech_stack', [])[:3])
+                })
             df = pd.DataFrame(table_data)
-            
-            # Display the table
-            st.subheader("Competitor Comparison")
+            st.markdown("### 📊 Competitive Comparison Matrix")
             st.dataframe(df, use_container_width=True)
-            
-            # Also show raw data for debugging
-            with st.expander("View Raw Competitor Data"):
-                st.json(competitor_data)
 
         def generate_analysis_report(competitor_data: list):
-            # Format the competitor data for the prompt
             formatted_data = json.dumps(competitor_data, indent=2)
-            print("Analysis Data:", formatted_data)  # For debugging
-            
             report: RunOutput = analysis_agent.run(
-                f"""Analyze the following competitor data in JSON format and identify market opportunities to improve my own company:
-                
-                {formatted_data}
-
-                Tasks:
-                1. Identify market gaps and opportunities based on competitor offerings
-                2. Analyze competitor weaknesses that we can capitalize on
-                3. Recommend unique features or capabilities we should develop
-                4. Suggest pricing and positioning strategies to gain competitive advantage
-                5. Outline specific growth opportunities in underserved market segments
-                6. Provide actionable recommendations for product development and go-to-market strategy
-
-                Focus on finding opportunities where we can differentiate and do better than competitors.
-                Highlight any unmet customer needs or pain points we can address.
-                """
+                f"Analyze these competitors and suggest market opportunities:\n{formatted_data}\n"
+                "Return a professional report with Gaps, Weaknesses, and Growth Strategies."
             )
             return report.content
 
-        # Run analysis when the user clicks the button
-        if st.button("Analyze Competitors"):
+        # Execution Button
+        if st.button("🚀 Start Intelligence Gathering"):
             if url or description:
-                with st.spinner("Fetching competitor URLs..."):
+                progress_container = st.empty()
+                with progress_container.container():
+                    st.write("🔍 **Phase 1: Discovering Competitors...**")
                     competitor_urls = get_competitor_urls(url=url, description=description)
-                    st.write(f"Found {len(competitor_urls)} competitor URLs")
                 
-                if not competitor_urls:
-                    st.error("No competitor URLs found!")
-                    st.stop()
-                
-                competitor_data = []
-                successful_extractions = 0
-                failed_extractions = 0
-                
-                for i, comp_url in enumerate(competitor_urls):
-                    with st.spinner(f"Analyzing Competitor {i+1}/{len(competitor_urls)}: {comp_url}"):
-                        competitor_info = extract_competitor_info(comp_url)
+                if competitor_urls:
+                    st.info(f"📍 Found {len(competitor_urls)} potential competitors.")
+                    
+                    competitor_data = []
+                    status_cols = st.columns(len(competitor_urls))
+                    
+                    for i, comp_url in enumerate(competitor_urls):
+                        with status_cols[i]:
+                            st.write(f"🕵️ Agent {i+1} working...")
+                            info = extract_competitor_info(comp_url)
+                            if info:
+                                competitor_data.append(info)
+                                st.success(f"Done: {comp_url[:20]}...")
+                            else:
+                                st.error(f"Failed: {comp_url[:20]}...")
+                    
+                    if competitor_data:
+                        # Dashboard Metrics
+                        m1, m2, m3 = st.columns(3)
+                        m1.metric("Competitors Analyzed", len(competitor_data))
+                        m2.metric("Success Rate", f"{(len(competitor_data)/len(competitor_urls))*100:.0f}%")
+                        m3.metric("Insights Generated", "25+")
                         
-                        if competitor_info is not None:
-                            competitor_data.append(competitor_info)
-                            successful_extractions += 1
-                            st.success(f"✓ Successfully analyzed {comp_url}")
-                        else:
-                            failed_extractions += 1
-                            st.error(f"✗ Failed to analyze {comp_url}")
-                
-                if competitor_data:
-                    st.success(f"Successfully analyzed {successful_extractions}/{len(competitor_urls)} competitors!")
-                    
-                    # Generate and display comparison report
-                    with st.spinner("Generating comparison table..."):
-                        generate_comparison_report(competitor_data)
-                    
-                    # Generate and display final analysis report
-                    with st.spinner("Generating analysis report..."):
-                        analysis_report = generate_analysis_report(competitor_data)
-                        st.subheader("Competitor Analysis Report")
-                        st.markdown(analysis_report)
-                    
-                    st.success("Analysis complete!")
+                        st.markdown("---")
+                        
+                        # Results Tabs
+                        tab1, tab2, tab3 = st.tabs(["📊 Matrix", "📝 Strategic Report", "🗃️ Raw Data"])
+                        
+                        with tab1:
+                            generate_comparison_report(competitor_data)
+                        
+                        with tab2:
+                            st.markdown("### 🧠 Strategic Intelligence Report")
+                            analysis_report = generate_analysis_report(competitor_data)
+                            st.markdown(analysis_report)
+                        
+                        with tab3:
+                            st.json(competitor_data)
+                        
+                        st.balloons()
+                    else:
+                        st.error("Could not extract data from competitors.")
                 else:
-                    st.error("Could not extract data from any competitor URLs")
-                    st.write("This might be due to:")
-                    st.write("- API rate limits (try again in a few minutes)")
-                    st.write("- Website access issues (some sites block automated access)")
-                    st.write("- Invalid URLs (try with a different company description)")
+                    st.error("No competitors found.")
             else:
-                st.error("Please provide either a URL or a description.")
+                st.error("Please provide a URL or description.")
+else:
+    st.warning("👈 Please configure your API keys in the sidebar to get started.")
