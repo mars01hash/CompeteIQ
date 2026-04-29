@@ -39,8 +39,8 @@ The application requires the following libraries (all included in `requirements.
 
 1. **Clone and Navigate**:
    ```bash
-   git clone https://github.com/Shubhamsaboo/awesome-llm-apps.git
-   cd advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team
+   git clone https://github.com/mars01hash/CompeteIQ.git
+   cd CompeteIQ
    ```
 
 2. **Install Dependencies**:
