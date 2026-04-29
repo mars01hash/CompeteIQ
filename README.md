@@ -59,7 +59,4 @@ The application requires the following libraries (all included in `requirements.
 2. **Analyze**: Input your company URL or a description of what you do.
 3. **Review**: Watch the agents collaborate to build your comparison table and strategic report.
 
-## 🌐 Deployment
-
-![Deployment Options](deploy.PNG)
 
